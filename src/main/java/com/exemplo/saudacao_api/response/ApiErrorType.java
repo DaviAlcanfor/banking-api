@@ -10,7 +10,13 @@ public enum ApiErrorType {
     SAME_ACCOUNT_TRANSFER(HttpStatus.BAD_REQUEST, "Bad Request", "Não é possível transferir para a mesma conta"),
     WITHDRAWAL_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Limite de saque excedido"),
     DATA_INTEGRITY_VIOLATION(HttpStatus.CONFLICT, "Conflict", "Violação de integridade no banco de dados"),
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Erro interno");
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Erro interno"),
+    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found", "Cartão não encontrado"),
+    CARD_NOT_ACTIVE(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Cartão não está ativo"),
+    CARD_CANCELLED(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Cartão cancelado não pode ser bloqueado"),
+    INSUFFICIENT_LIMIT(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Limite insuficiente"),
+    INVALID_CARD_TYPE(HttpStatus.BAD_REQUEST, "Bad Request", "Operação disponível apenas para cartão de crédito"),
+    INVALID_BILL_PAYMENT(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Valor maior que a fatura atual");
 
     public final HttpStatus status;
     public final String error;

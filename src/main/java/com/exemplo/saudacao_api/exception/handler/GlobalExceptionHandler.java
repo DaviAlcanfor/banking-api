@@ -80,4 +80,46 @@ public class GlobalExceptionHandler {
                 .status(ApiErrorType.INTERNAL_ERROR.status)
                 .body(ApiError.of(ApiErrorType.INTERNAL_ERROR, ex.getMessage()));
     }
+
+    @ExceptionHandler(CardNotFoundException.class)
+    public ResponseEntity<ApiError> handleCardNotFound(CardNotFoundException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.CARD_NOT_FOUND.status)
+                .body(ApiError.of(ApiErrorType.CARD_NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CardNotActiveException.class)
+    public ResponseEntity<ApiError> handleCardNotActive(CardNotActiveException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.CARD_NOT_ACTIVE.status)
+                .body(ApiError.of(ApiErrorType.CARD_NOT_ACTIVE, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CardCancelledException.class)
+    public ResponseEntity<ApiError> handleCardCancelled(CardCancelledException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.CARD_CANCELLED.status)
+                .body(ApiError.of(ApiErrorType.CARD_CANCELLED, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientLimitException.class)
+    public ResponseEntity<ApiError> handleInsufficientLimit(InsufficientLimitException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.INSUFFICIENT_LIMIT.status)
+                .body(ApiError.of(ApiErrorType.INSUFFICIENT_LIMIT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCardTypeException.class)
+    public ResponseEntity<ApiError> handleInvalidCardType(InvalidCardTypeException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.INVALID_CARD_TYPE.status)
+                .body(ApiError.of(ApiErrorType.INVALID_CARD_TYPE, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidBillPaymentException.class)
+    public ResponseEntity<ApiError> handleInvalidBillPayment(InvalidBillPaymentException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.INVALID_BILL_PAYMENT.status)
+                .body(ApiError.of(ApiErrorType.INVALID_BILL_PAYMENT, ex.getMessage()));
+    }
 }
