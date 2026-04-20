@@ -28,7 +28,7 @@ public class CardController {
     }
 
     @PostMapping
-    public ResponseEntity<CardDTO> criarCartao(
+    public ResponseEntity<CardDTO> createCard(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam CardType type,
@@ -44,7 +44,7 @@ public class CardController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CardDTO>> listarCartoes(
+    public ResponseEntity<List<CardDTO>> listCards(
             @RequestParam String username,
             @RequestParam String password
     ) {
@@ -55,7 +55,7 @@ public class CardController {
     }
 
     @GetMapping("/ativos")
-    public ResponseEntity<List<CardDTO>> listarCartoesAtivos(
+    public ResponseEntity<List<CardDTO>> listActiveCards(
             @RequestParam String username,
             @RequestParam String password
     ) {
@@ -66,7 +66,7 @@ public class CardController {
     }
 
     @PatchMapping("/{cardId}/bloquear")
-    public ResponseEntity<CardDTO> bloquearCartao(
+    public ResponseEntity<CardDTO> blockCard(
             @PathVariable Long cardId,
             @RequestParam String username,
             @RequestParam String password
@@ -78,7 +78,7 @@ public class CardController {
     }
 
     @PatchMapping("/{cardId}/cancelar")
-    public ResponseEntity<CardDTO> cancelarCartao(
+    public ResponseEntity<CardDTO> cancelCard(
             @PathVariable Long cardId,
             @RequestParam String username,
             @RequestParam String password
@@ -90,7 +90,7 @@ public class CardController {
     }
 
     @PostMapping("/{cardId}/usar-limite")
-    public ResponseEntity<CardDTO> usarLimite(
+    public ResponseEntity<CardDTO> useLimit(
             @PathVariable Long cardId,
             @RequestParam String username,
             @RequestParam String password,
@@ -103,7 +103,7 @@ public class CardController {
     }
 
     @PostMapping("/{cardId}/pagar-fatura")
-    public ResponseEntity<CardDTO> pagarFatura(
+    public ResponseEntity<CardDTO> payBill(
             @PathVariable Long cardId,
             @RequestParam String username,
             @RequestParam String password,

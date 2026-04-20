@@ -122,4 +122,18 @@ public class GlobalExceptionHandler {
                 .status(ApiErrorType.INVALID_BILL_PAYMENT.status)
                 .body(ApiError.of(ApiErrorType.INVALID_BILL_PAYMENT, ex.getMessage()));
     }
+
+    @ExceptionHandler(LoanNotFoundException.class)
+    public ResponseEntity<ApiError> handleLoanNotFound(LoanNotFoundException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.LOAN_NOT_FOUND.status)
+                .body(ApiError.of(ApiErrorType.LOAN_NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(LoanAlreadyPaidException.class)
+    public ResponseEntity<ApiError> handleLoanAlreadyPaid(LoanAlreadyPaidException ex) {
+        return ResponseEntity
+                .status(ApiErrorType.LOAN_ALREADY_PAID.status)
+                .body(ApiError.of(ApiErrorType.LOAN_ALREADY_PAID, ex.getMessage()));
+    }
 }

@@ -16,7 +16,9 @@ public enum ApiErrorType {
     CARD_CANCELLED(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Cartão cancelado não pode ser bloqueado"),
     INSUFFICIENT_LIMIT(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Limite insuficiente"),
     INVALID_CARD_TYPE(HttpStatus.BAD_REQUEST, "Bad Request", "Operação disponível apenas para cartão de crédito"),
-    INVALID_BILL_PAYMENT(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Valor maior que a fatura atual");
+    INVALID_BILL_PAYMENT(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Valor maior que a fatura atual"),
+    LOAN_NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found", "Empréstimo não encontrado"),
+    LOAN_ALREADY_PAID(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Empréstimo já quitado");
 
     public final HttpStatus status;
     public final String error;

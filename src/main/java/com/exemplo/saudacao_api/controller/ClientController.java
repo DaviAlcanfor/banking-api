@@ -19,7 +19,7 @@ public class ClientController {
     }
 
     @PostMapping("/cliente")
-    public ResponseEntity<ClientDTO> criarCliente(
+    public ResponseEntity<ClientDTO> createClient(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam double balance,
@@ -31,7 +31,7 @@ public class ClientController {
     }
 
     @GetMapping("/saldo")
-    public ResponseEntity<ClientDTO> getSaldo(
+    public ResponseEntity<ClientDTO> getBalance(
             @RequestParam String username,
             @RequestParam String password
     ) {

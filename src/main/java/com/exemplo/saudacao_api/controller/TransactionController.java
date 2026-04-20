@@ -26,7 +26,7 @@ public class TransactionController {
     }
 
     @PostMapping("/deposito")
-    public ResponseEntity<TransactionDTO> depositar(
+    public ResponseEntity<TransactionDTO> deposit(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam Double value
@@ -40,7 +40,7 @@ public class TransactionController {
     }
 
     @PostMapping("/saque")
-    public ResponseEntity<TransactionDTO> sacar(
+    public ResponseEntity<TransactionDTO> withdraw(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam Double value,
@@ -55,7 +55,7 @@ public class TransactionController {
     }
 
     @PostMapping("/transferencia")
-    public ResponseEntity<TransactionDTO> transferir(
+    public ResponseEntity<TransactionDTO> transfer(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam String toUsername,
@@ -70,7 +70,7 @@ public class TransactionController {
     }
 
     @GetMapping("/historico")
-    public ResponseEntity<List<TransactionDTO>> historico(
+    public ResponseEntity<List<TransactionDTO>> getHistory(
             @RequestParam String username,
             @RequestParam String password
     ) {
