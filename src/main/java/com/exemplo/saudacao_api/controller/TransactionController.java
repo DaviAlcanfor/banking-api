@@ -4,6 +4,8 @@ import com.exemplo.saudacao_api.model.dto.TransactionDTO;
 import com.exemplo.saudacao_api.model.types.AccountType;
 import com.exemplo.saudacao_api.service.ClientService;
 import com.exemplo.saudacao_api.service.TransactionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,51 +26,57 @@ public class TransactionController {
     }
 
     @PostMapping("/deposito")
-    public String depositar(
+    public ResponseEntity<TransactionDTO> depositar(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam Double value
     ) {
         if (!clientService.validateUser(username, password))
-            return "Acesso negado!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return transactionService.deposit(username, value);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(transactionService.deposit(username, value));
     }
 
     @PostMapping("/saque")
-    public String sacar(
+    public ResponseEntity<TransactionDTO> sacar(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam Double value,
             @RequestParam(required = false) AccountType accountType
     ) {
         if (!clientService.validateUser(username, password))
-            return "Acesso negado!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return transactionService.withdraw(username, value, accountType);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(transactionService.withdraw(username, value, accountType));
     }
 
     @PostMapping("/transferencia")
-    public String transferir(
+    public ResponseEntity<TransactionDTO> transferir(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam String toUsername,
             @RequestParam Double value
     ) {
         if (!clientService.validateUser(username, password))
-            return "Acesso negado!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return transactionService.transfer(username, toUsername, value);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(transactionService.transfer(username, toUsername, value));
     }
 
     @GetMapping("/historico")
-    public List<TransactionDTO> historico(
+    public ResponseEntity<List<TransactionDTO>> historico(
             @RequestParam String username,
             @RequestParam String password
     ) {
         if (!clientService.validateUser(username, password))
-            return List.of();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return transactionService.getHistory(username);
+        return ResponseEntity.ok(transactionService.getHistory(username));
     }
 }

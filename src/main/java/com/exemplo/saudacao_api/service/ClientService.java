@@ -1,18 +1,26 @@
 package com.exemplo.saudacao_api.service;
 
+import com.exemplo.saudacao_api.exception.ClientNotFoundException;
+import com.exemplo.saudacao_api.exception.UsernameAlreadyExistsException;
 import com.exemplo.saudacao_api.model.dto.ClientDTO;
 import com.exemplo.saudacao_api.model.entity.ClientEntity;
 import com.exemplo.saudacao_api.model.types.AccountType;
 import com.exemplo.saudacao_api.repository.ClientRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(
+            ClientRepository clientRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.clientRepository = clientRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public ClientDTO createClient(
@@ -22,12 +30,13 @@ public class ClientService {
             AccountType accountType
     ) {
         if (clientRepository.existsByUsername(username))
-            throw new RuntimeException("Username já existe");
+            throw new UsernameAlreadyExistsException(username);
 
-        var client = new ClientEntity(username, password, balance, accountType);
+        var encoded = passwordEncoder.encode(password);
+        var client = new ClientEntity(username, encoded, balance, accountType);
         var saved = clientRepository.save(client);
 
-        return new ClientDTO(saved.getUsername(), saved.getBalance(), saved.getAccountType());
+        return toDTO(saved);
     }
 
     /**
@@ -39,14 +48,18 @@ public class ClientService {
      */
     public boolean validateUser(String username, String password) {
         return clientRepository.findByUsername(username)
-                .map(client -> client.getPassword().equals(password))
+                .map(client -> passwordEncoder.matches(password, client.getPassword()))
                 .orElse(false);
     }
 
-    public String getBalance(String username) {
+    public ClientDTO getBalance(String username) {
         var client = clientRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(username));
 
-        return "Seu saldo atual é R$ " + client.getBalance();
+        return toDTO(client);
+    }
+
+    private ClientDTO toDTO(ClientEntity client) {
+        return new ClientDTO(client.getUsername(), client.getBalance(), client.getAccountType());
     }
 }

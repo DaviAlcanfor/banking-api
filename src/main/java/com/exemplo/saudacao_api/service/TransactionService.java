@@ -1,5 +1,6 @@
 package com.exemplo.saudacao_api.service;
 
+import com.exemplo.saudacao_api.exception.*;
 import com.exemplo.saudacao_api.model.dto.TransactionDTO;
 import com.exemplo.saudacao_api.model.entity.ClientEntity;
 import com.exemplo.saudacao_api.model.entity.TransactionEntity;
@@ -25,19 +26,17 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    public String deposit(String username, Double value) {
+    public TransactionDTO deposit(String username, Double value) {
         var client = clientRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(username));
 
         if (value == null || value <= 0)
-            return "Valor inválido para depósito";
+            throw new InvalidAmountException();
 
         client.setBalance(client.getBalance() + value);
         clientRepository.save(client);
 
-        saveTransaction(TransactionType.DEPOSITO, value, client, null);
-
-        return "Depósito realizado. Novo saldo: R$ " + client.getBalance();
+        return toDTO(saveTransaction(TransactionType.DEPOSITO, value, client, null));
     }
 
     /**
@@ -49,52 +48,51 @@ public class TransactionService {
      * @param username username do cliente
      * @param value valor a ser sacado
      * @param accountType tipo da conta (pode ser null)
-     * @return mensagem com resultado da operação
+     * @return TransactionDTO com resultado da operação
      */
-    public String withdraw(String username, Double value, AccountType accountType) {
+    public TransactionDTO withdraw(
+            String username,
+            Double value,
+            AccountType accountType
+    ) {
         var client = clientRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(username));
 
         if (value == null || value <= 0)
-            return "Valor inválido para saque";
+            throw new InvalidAmountException();
 
         final double POUPANCA_MAX = 500;
         final double CORRENTE_LIMIT = -200;
 
         if (accountType == null) {
             if (value > client.getBalance())
-                return "Saldo insuficiente";
+                throw new InsufficientBalanceException();
 
             client.setBalance(client.getBalance() - value);
             clientRepository.save(client);
-            saveTransaction(TransactionType.SAQUE, value, client, null);
 
-            return "Saque realizado. Novo saldo: R$ " + client.getBalance();
+            return toDTO(saveTransaction(TransactionType.SAQUE, value, client, null));
         }
 
         return switch (accountType) {
             case POUPANCA -> {
                 if (value > POUPANCA_MAX)
-                    yield "Saque não permitido para poupança acima de R$ 500";
+                    throw new WithdrawalLimitExceededException(POUPANCA_MAX);
 
                 client.setBalance(client.getBalance() - value);
                 clientRepository.save(client);
-                saveTransaction(TransactionType.SAQUE, value, client, null);
 
-                yield "Saque realizado. Novo saldo: R$ " + client.getBalance();
+                yield toDTO(saveTransaction(TransactionType.SAQUE, value, client, null));
             }
             case CORRENTE -> {
                 double newBalance = client.getBalance() - value;
                 if (newBalance < CORRENTE_LIMIT)
-                    yield "Limite excedido!";
+                    throw new InsufficientBalanceException();
 
                 client.setBalance(newBalance);
                 clientRepository.save(client);
-                saveTransaction(TransactionType.SAQUE, value, client, null);
 
-                yield newBalance < 0
-                        ? "Saque realizado com uso do limite. Saldo: R$ " + newBalance
-                        : "Saque realizado. Novo saldo: R$ " + newBalance;
+                yield toDTO(saveTransaction(TransactionType.SAQUE, value, client, null));
             }
         };
     }
@@ -107,54 +105,64 @@ public class TransactionService {
      * @param fromUsername username do cliente que está enviando
      * @param toUsername username do cliente que está recebendo
      * @param value valor a ser transferido (deve ser positivo)
-     * @return mensagem com resultado e novo saldo do cliente origem
+     * @return TransactionDTO com resultado da operação
      */
-    public String transfer(String fromUsername, String toUsername, Double value) {
+    public TransactionDTO transfer(
+            String fromUsername,
+            String toUsername,
+            Double value
+    ) {
         var from = clientRepository.findByUsername(fromUsername)
-                .orElseThrow(() -> new RuntimeException("Cliente origem não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(fromUsername));
 
         var to = clientRepository.findByUsername(toUsername)
-                .orElseThrow(() -> new RuntimeException("Cliente destino não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(toUsername));
 
         if (value == null || value <= 0)
-            return "Valor inválido para transferência";
+            throw new InvalidAmountException();
+
+        if (fromUsername.equals(toUsername))
+            throw new SameAccountTransferException();
 
         if (from.getBalance() < value)
-            return "Saldo insuficiente";
+            throw new InsufficientBalanceException();
 
         from.setBalance(from.getBalance() - value);
         to.setBalance(to.getBalance() + value);
 
         clientRepository.save(from);
         clientRepository.save(to);
-        saveTransaction(TransactionType.TRANSFERENCIA, value, from, to);
 
-        return "Transferência realizada. Novo saldo: R$ " + from.getBalance();
+        return toDTO(saveTransaction(TransactionType.TRANSFERENCIA, value, from, to));
     }
 
     public List<TransactionDTO> getHistory(String username) {
         var client = clientRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ClientNotFoundException(username));
 
         return transactionRepository.findByClientOrTargetClient(client, client)
                 .stream()
-                .map(t -> new TransactionDTO(
-                        t.getType(),
-                        t.getAmount(),
-                        t.getClient().getUsername(),
-                        t.getTargetClient() != null ? t.getTargetClient().getUsername() : null,
-                        t.getTimestamp()
-                ))
+                .map(this::toDTO)
                 .toList();
     }
 
-    private void saveTransaction(
+    private TransactionEntity saveTransaction(
             TransactionType type,
             Double value,
             ClientEntity client,
             ClientEntity targetClient
     ) {
         var transaction = new TransactionEntity(type, value, client, targetClient);
-        transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
+    }
+
+    private TransactionDTO toDTO(TransactionEntity t) {
+        return new TransactionDTO(
+                t.getType(),
+                t.getAmount(),
+                t.getClient().getUsername(),
+                t.getTargetClient() != null ? t.getTargetClient().getUsername() : null,
+                t.getTimestamp()
+        );
     }
 }
